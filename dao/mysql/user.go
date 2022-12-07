@@ -2,17 +2,28 @@ package mysql
 
 import (
 	"crypto/md5"
+	"database/sql"
 	"encoding/hex"
+	"errors"
 	"goreddit/model"
 )
 
-func CheckUserExist(userName string) (bool, error) {
+var (
+	ErrorUserExist       = errors.New("用户已存在")
+	ErrorUserNotExist    = errors.New("用户不存在")
+	ErrorInvalidPassword = errors.New("密码错误")
+)
+
+func CheckUserExist(userName string) (err error) {
 	sqlStr := "select count(user_id) from user where username=?"
 	var count int
 	if err := db.Get(&count, sqlStr, userName); err != nil {
-		return false, err
+		return err
 	}
-	return count > 0, nil
+	if count > 0 {
+		return ErrorUserExist
+	}
+	return nil
 }
 
 func InsertUser(user *model.User) (err error) {
@@ -21,6 +32,21 @@ func InsertUser(user *model.User) (err error) {
 	sqlStr := "insert into user(user_id, username, password) values (?, ?, ?)"
 	_, err = db.Exec(sqlStr, user.UserID, user.UserName, password)
 	return
+}
+
+func Login(user *model.User) (err error) {
+	encryptPassword := encryptPassword(user.Password)
+	sqlStr := "select user_id, username, password from user where username=?"
+	if err := db.Get(user, sqlStr, user.UserName); err != nil {
+		if err == sql.ErrNoRows {
+			return ErrorUserNotExist
+		}
+		return err
+	}
+	if user.Password != encryptPassword {
+		return ErrorInvalidPassword
+	}
+	return nil
 }
 
 func encryptPassword(input string) string {
