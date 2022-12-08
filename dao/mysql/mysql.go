@@ -11,8 +11,8 @@ import (
 var db *sqlx.DB
 
 func Init(cfg *setting.MySQLConfig) (err error) {
-	// user:password@tcp(127.0.0.1:3306)/sql_test?charset=utf8mb4&parseTime=True
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True",
+	// user:password@tcp(127.0.0.1:3306)/sql_test?charset=utf8mb4&parseTime=True&loc=Local
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		cfg.User,
 		cfg.Password,
 		cfg.Host,
