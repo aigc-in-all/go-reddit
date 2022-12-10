@@ -42,6 +42,13 @@ func Login(user *model.User) (err error) {
 	return nil
 }
 
+func GetUserById(uid int64) (user *model.User, err error) {
+	sqlStr := "select user_id, username from user where user_id = ?"
+	user = new(model.User)
+	err = db.Get(user, sqlStr, uid)
+	return
+}
+
 func encryptPassword(input string) string {
 	h := md5.New()
 	h.Write([]byte("goreddit2022"))
