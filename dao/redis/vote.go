@@ -15,6 +15,7 @@ const (
 
 var (
 	ErrVoteTimeExpire = errors.New("投票时间已过")
+	ErrVoteRepeat     = errors.New("你已经投过票了")
 )
 
 /*
@@ -46,6 +47,9 @@ func VoteForPost(userId, postId string, value float64) error {
 
 	// 2.更新帖子分数
 	ov := client.ZScore(context.Background(), getRedisKey(KeyPostVotedZSetPrefix+postId), userId).Val()
+	if value == ov {
+		return ErrVoteRepeat
+	}
 	var op float64
 	if value > ov {
 		op = 1

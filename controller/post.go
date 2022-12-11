@@ -46,16 +46,7 @@ func GetPostDetailHandler(c *gin.Context) {
 
 func GetPostListHandler(c *gin.Context) {
 	// 获取分页数据
-	pageNumStr := c.Query("pageNum")
-	pageSizeStr := c.Query("pageSize")
-	pageNum, err := strconv.ParseInt(pageNumStr, 10, 64)
-	if err != nil {
-		pageNum = 0
-	}
-	pageSize, err := strconv.ParseInt(pageSizeStr, 10, 64)
-	if err != nil {
-		pageNum = 10
-	}
+	pageNum, pageSize := getPageInfo(c)
 
 	data, err := service.GetPostList(pageNum, pageSize)
 	if err != nil {
@@ -64,4 +55,47 @@ func GetPostListHandler(c *gin.Context) {
 		return
 	}
 	ResponseSuccess(c, data)
+}
+
+// GetPostListHandler2 升级版帖子列表
+// 按创建时间排序 或者按照 分数 排序
+// 1.获取参数
+// 2.去redis查询id列表
+// 3.根据id去数据库查询帖子详细信息
+func GetPostListHandler2(c *gin.Context) {
+	// GET请求参数 /api/v1/posts/page=1&size=10&order=time
+	// 获取请求参数
+	p := &model.ParamPostList{
+		Page:  1,
+		Size:  10,
+		Order: model.OrderTime,
+	}
+	if err := c.ShouldBindQuery(p); err != nil {
+		ResponseError(c, CodeInvalidParam)
+		return
+	}
+
+	data, err := service.GetPostList2(p)
+	if err != nil {
+		zap.L().Error("service.GetPostList failed", zap.Error(err))
+		ResponseError(c, CodeServerBusy)
+		return
+	}
+	ResponseSuccess(c, data)
+}
+
+// getPageInfo 获取分页数据
+func getPageInfo(c *gin.Context) (page, size int64) {
+	pageStr := c.Query("page")
+	sizeStr := c.Query("size")
+	var err error
+	page, err = strconv.ParseInt(pageStr, 10, 64)
+	if err != nil {
+		page = 1
+	}
+	size, err = strconv.ParseInt(sizeStr, 10, 64)
+	if err != nil {
+		size = 10
+	}
+	return
 }
