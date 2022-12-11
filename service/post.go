@@ -3,13 +3,20 @@ package service
 import (
 	"go.uber.org/zap"
 	"goreddit/dao/mysql"
+	"goreddit/dao/redis"
 	"goreddit/model"
 	"goreddit/pkg/snowflake"
 )
 
 func CreatePost(post *model.Post) (err error) {
 	post.ID = snowflake.GenID()
-	return mysql.CreatePost(post)
+	err = mysql.CreatePost(post)
+	if err != nil {
+		return
+	}
+	// 把创建时间写入Redis
+	err = redis.CreatePost(post.ID)
+	return
 }
 
 func GetPostByID(postId int64) (data *model.ApiPostDetail, err error) {
