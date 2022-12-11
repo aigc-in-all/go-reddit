@@ -17,6 +17,12 @@ import (
 	"time"
 )
 
+// @title
+// @version 1.0
+// @description
+// @termsOfService
+// @host 127.0.0.1:8080
+// @BasePath /api/v1
 func main() {
 	// 1. 加载配置
 	if err := setting.Init(); err != nil {

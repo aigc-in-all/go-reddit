@@ -6,6 +6,11 @@ import (
 	"goreddit/logger"
 	"goreddit/middlewares"
 	"net/http"
+
+	"github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	_ "goreddit/docs"
 )
 
 func Setup(mode string) *gin.Engine {
@@ -15,6 +20,7 @@ func Setup(mode string) *gin.Engine {
 	r := gin.New()
 	r.Use(logger.GinLogger(), logger.GinRecovery(true))
 
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	v1 := r.Group("/api/v1")
 	v1.POST("/signup", controller.SignUpHandler)
 	v1.POST("/login", controller.LoginHandler)
